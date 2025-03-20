@@ -93,3 +93,18 @@
         display: none;
     }
 }
+
+// 完全隐藏菜单的样式
+.menu-hidden {
+    #menu-bar {
+        display: none !important;
+    }
+    
+    .pcui-menu-panel {
+        display: none !important;
+    }
+    
+    #menu {
+        display: none !important;
+    }
+}

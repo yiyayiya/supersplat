@@ -29,6 +29,14 @@ const createSvg = (svgString: string) => {
 };
 
 class Menu extends Container {
+    static toggleMenuVisibility(visible: boolean) {
+        if (visible) {
+            document.body.classList.remove('menu-hidden');
+        } else {
+            document.body.classList.add('menu-hidden');
+        }
+    }
+
     constructor(events: Events, args = {}) {
         args = {
             ...args,
@@ -52,6 +60,7 @@ class Menu extends Container {
             window.open('https://playcanvas.com', '_blank').focus();
         });
 
+        //
         const icon = new Element({
             dom: iconDom
         });
@@ -80,7 +89,9 @@ class Menu extends Container {
             document.body.classList.toggle('collapsed');
         };
 
-        // collapse menu on mobile
+        // 结束菜单设置
+
+        // 在移动设备上折叠菜单
         if (document.body.clientWidth < 600) {
             toggleCollapsed();
         }

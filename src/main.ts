@@ -25,6 +25,7 @@ import { SphereSelection } from './tools/sphere-selection';
 import { ToolManager } from './tools/tool-manager';
 import { registerTransformHandlerEvents } from './transform-handler';
 import { EditorUI } from './ui/editor';
+import { Menu } from './ui/menu';
 
 declare global {
     interface LaunchParams {
@@ -93,6 +94,7 @@ const initShortcuts = (events: Events) => {
     shortcuts.register(['M', 'm'], { event: 'camera.toggleMode' });
     shortcuts.register(['D', 'd'], { event: 'dataPanel.toggle' });
     shortcuts.register([' '], { event: 'camera.toggleOverlay' });
+    shortcuts.register(['T', 't'], { event: 'menu.toggle' });
 
     return shortcuts;
 };
@@ -140,6 +142,15 @@ const main = async () => {
         editorUI.canvas,
         graphicsDevice
     );
+
+    // 检查是否需要隐藏菜单
+    const showMenu = url.searchParams.get('showMenu') === 'true';
+    if (showMenu) {
+        document.body.classList.remove('menu-hidden');
+    } else {
+        // 默认情况下隐藏菜单
+        document.body.classList.add('menu-hidden');
+    }
 
     // colors
     const bgClr = new Color();
@@ -253,6 +264,11 @@ const main = async () => {
     registerRenderEvents(scene, events);
     initShortcuts(events);
     initFileHandler(scene, events, editorUI.appContainer.dom, remoteStorageDetails);
+
+    // 添加菜单切换事件处理
+    events.on('menu.toggle', () => {
+        document.body.classList.toggle('menu-hidden');
+    });
 
     // load async models
     scene.start();
