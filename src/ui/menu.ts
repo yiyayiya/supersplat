@@ -10,8 +10,6 @@ import sceneExport from './svg/export.svg';
 import sceneImport from './svg/import.svg';
 import sceneNew from './svg/new.svg';
 import sceneOpen from './svg/open.svg';
-import logoSvg from './svg/playcanvas-logo.svg';
-import scenePublish from './svg/publish.svg';
 import sceneSave from './svg/save.svg';
 import selectAll from './svg/select-all.svg';
 import selectDuplicate from './svg/select-duplicate.svg';
@@ -53,18 +51,6 @@ class Menu extends Container {
             event.stopPropagation();
         });
 
-        const iconDom = document.createElement('img');
-        iconDom.src = logoSvg;
-        iconDom.setAttribute('id', 'app-icon');
-        iconDom.addEventListener('pointerdown', (event) => {
-            window.open('https://playcanvas.com', '_blank').focus();
-        });
-
-        //
-        const icon = new Element({
-            dom: iconDom
-        });
-
         const scene = new Label({
             text: localize('file'),
             class: 'menu-option'
@@ -80,16 +66,9 @@ class Menu extends Container {
             class: 'menu-option'
         });
 
-        const help = new Label({
-            text: localize('help'),
-            class: 'menu-option'
-        });
-
         const toggleCollapsed = () => {
             document.body.classList.toggle('collapsed');
         };
-
-        // 结束菜单设置
 
         // 在移动设备上折叠菜单
         if (document.body.clientWidth < 600) {
@@ -112,11 +91,9 @@ class Menu extends Container {
         buttonsContainer.append(scene);
         buttonsContainer.append(selection);
         buttonsContainer.append(render);
-        buttonsContainer.append(help);
         buttonsContainer.append(collapse);
         buttonsContainer.append(arrow);
 
-        menubar.append(icon);
         menubar.append(buttonsContainer);
 
         const exportMenuPanel = new MenuPanel([{
@@ -180,7 +157,7 @@ class Menu extends Container {
             subMenu: exportMenuPanel
         }, {
             text: localize('file.publish'),
-            icon: createSvg(scenePublish),
+            icon: createSvg(sceneExport),
             isEnabled: () => !events.invoke('scene.empty'),
             onSelect: async () => await events.invoke('show.publishSettingsDialog')
         }]);
@@ -246,52 +223,11 @@ class Menu extends Container {
             onSelect: async () => await events.invoke('show.videoSettingsDialog')
         }]);
 
-        const helpMenuPanel = new MenuPanel([{
-            text: localize('help.shortcuts'),
-            icon: 'E136',
-            onSelect: () => events.fire('show.shortcuts')
-        }, {
-            text: localize('help.user-guide'),
-            icon: 'E232',
-            onSelect: () => window.open('https://github.com/playcanvas/supersplat/wiki', '_blank').focus()
-        }, {
-            text: localize('help.log-issue'),
-            icon: 'E336',
-            onSelect: () => window.open('https://github.com/playcanvas/supersplat/issues', '_blank').focus()
-        }, {
-            text: localize('help.github-repo'),
-            icon: 'E259',
-            onSelect: () => window.open('https://github.com/playcanvas/supersplat', '_blank').focus()
-        }, {
-            // separator
-        }, {
-            text: localize('help.basics-video'),
-            icon: 'E261',
-            onSelect: () => window.open('https://youtu.be/MwzaEM2I55I', '_blank').focus()
-        }, {
-            // separator
-        }, {
-            text: localize('help.discord'),
-            icon: 'E233',
-            onSelect: () => window.open('https://discord.gg/T3pnhRTTAY', '_blank').focus()
-        }, {
-            text: localize('help.forum'),
-            icon: 'E432',
-            onSelect: () => window.open('https://forum.playcanvas.com', '_blank').focus()
-        }, {
-            // separator
-        }, {
-            text: localize('help.about'),
-            icon: 'E138',
-            onSelect: () => events.invoke('show.about')
-        }]);
-
         this.append(menubar);
         this.append(fileMenuPanel);
         this.append(exportMenuPanel);
         this.append(selectionMenuPanel);
         this.append(renderMenuPanel);
-        this.append(helpMenuPanel);
 
         const options: { dom: HTMLElement, menuPanel: MenuPanel }[] = [{
             dom: scene.dom,
@@ -302,9 +238,6 @@ class Menu extends Container {
         }, {
             dom: render.dom,
             menuPanel: renderMenuPanel
-        }, {
-            dom: help.dom,
-            menuPanel: helpMenuPanel
         }];
 
         options.forEach((option) => {

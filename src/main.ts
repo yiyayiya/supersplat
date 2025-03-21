@@ -144,7 +144,9 @@ const main = async () => {
     );
 
     // 检查是否需要隐藏菜单
-    const showMenu = url.searchParams.get('showMenu') === 'true';
+    // showMenu 默认为true
+    // const showMenu = url.searchParams.get('showMenu') === 'true';
+    const showMenu = true;
     if (showMenu) {
         document.body.classList.remove('menu-hidden');
     } else {
@@ -152,6 +154,11 @@ const main = async () => {
         document.body.classList.add('menu-hidden');
     }
 
+    // 设置文档标题
+    document.title = 'YunjingRecon3D';
+
+    // 打印日志
+    console.log('showMenu', showMenu);
     // colors
     const bgClr = new Color();
     const selectedClr = new Color();
