@@ -21,8 +21,8 @@ const sceneConfig = {
         overlay: false
     },
     show: {
-        grid: true,
-        bound: true,
+        grid: false,
+        bound: false,
         shBands: 3
     },
     controls: {

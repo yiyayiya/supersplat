@@ -125,7 +125,7 @@ const registerEditorEvents = (events: Events, editHistory: EditHistory, scene: S
 
     // camera.bound
 
-    let bound = scene.config.show.bound;
+    let bound = false;
 
     const setBoundVisible = (visible: boolean) => {
         if (visible !== bound) {
