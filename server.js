@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 8080;
 
-// 模型文件存储路径 - 只保留public/models
+// 模型文件存储路径
 const MODELS_DIR = path.join(__dirname, 'public', 'models');
 
 // 确保模型目录存在
@@ -36,80 +36,99 @@ app.use((req, res, next) => {
   next();
 });
 
-// 添加模型诊断端点
-app.get('/api/debug/check-model', (req, res) => {
-  const modelName = req.query.model;
-  const modelType = req.query.type || 'ply';
-  
-  if (!modelName) {
-    return res.status(400).json({ error: '缺少模型名称参数' });
-  }
-  
-  // 检查各种可能的路径
-  const potentialPaths = [
-    { 
-      path: path.join(MODELS_DIR, modelName, `${modelName}.${modelType}`),
-      type: 'public/models/{model}/{model}.{type}'
-    },
-    { 
-      path: path.join(MODELS_DIR, `${modelName}.${modelType}`),
-      type: 'public/models/{model}.{type}'
-    }
-  ];
-  
-  const results = potentialPaths.map(item => {
-    const exists = fs.existsSync(item.path);
-    const stats = exists ? fs.statSync(item.path) : null;
-    
-    return {
-      type: item.type,
-      path: item.path,
-      exists,
-      fileSize: stats ? stats.size : null,
-      isFile: stats ? stats.isFile() : null,
-      webPath: item.path.replace(MODELS_DIR, '/models')
-    };
-  });
-  
-  res.json({
-    model: modelName,
-    type: modelType,
-    paths: results,
-    foundValidPath: results.some(r => r.exists && r.isFile)
-  });
-});
-
-// 为模型文件提供动态文件服务
+// 为模型文件提供动态文件服务，添加适合的MIME类型
 app.use('/models', (req, res, next) => {
   const modelPath = path.join(MODELS_DIR, req.path);
   
   // 检查文件是否存在于模型目录
   if (fs.existsSync(modelPath) && fs.statSync(modelPath).isFile()) {
-    console.log(`从public/models提供文件: ${modelPath}`);
-    return res.sendFile(modelPath);
+    // 根据文件扩展名设置正确的MIME类型
+    const ext = path.extname(modelPath).toLowerCase();
+    
+    switch (ext) {
+      case '.ply':
+        res.set('Content-Type', 'application/octet-stream');
+        break;
+      case '.splat':
+        res.set('Content-Type', 'application/octet-stream');
+        break;
+      case '.obj':
+        res.set('Content-Type', 'text/plain');
+        break;
+      case '.glb':
+        res.set('Content-Type', 'model/gltf-binary');
+        break;
+      case '.gltf':
+        res.set('Content-Type', 'model/gltf+json');
+        break;
+    }
+    
+    // 提供文件服务
+    res.sendFile(modelPath);
+  } else {
+    next();
+  }
+});
+
+// 增强静态文件服务
+app.use(express.static(path.join(__dirname, 'dist'), {
+  setHeaders: (res, filepath) => {
+    // 确保JavaScript文件使用正确的MIME类型
+    if (filepath.endsWith('.js')) {
+      res.set('Content-Type', 'application/javascript');
+    } else if (filepath.endsWith('.mjs')) {
+      res.set('Content-Type', 'application/javascript');
+    } else if (filepath.endsWith('.json')) {
+      res.set('Content-Type', 'application/json');
+    } else if (filepath.endsWith('.css')) {
+      res.set('Content-Type', 'text/css');
+    }
+  }
+}));
+
+// 提供src目录中的文件（修复MIME类型）
+app.use('/src', express.static(path.join(__dirname, 'src'), {
+  setHeaders: (res, filepath) => {
+    if (filepath.endsWith('.js')) {
+      res.set('Content-Type', 'application/javascript');
+    } else if (filepath.endsWith('.mjs')) {
+      res.set('Content-Type', 'application/javascript');
+    } else if (filepath.endsWith('.ts')) {
+      res.set('Content-Type', 'application/javascript');
+    }
+  }
+}));
+
+// 特殊处理 autoLoad1.js 以确保其正确提供
+app.get('/src/autoLoad1.js', (req, res) => {
+  const autoLoadPath = path.join(__dirname, 'src', 'autoLoad1.js');
+  
+  if (fs.existsSync(autoLoadPath)) {
+    res.set('Content-Type', 'application/javascript');
+    res.sendFile(autoLoadPath);
+  } else {
+    res.status(404).send('// autoLoad1.js 文件不存在');
+  }
+});
+
+// 增强SPA通配符路由
+app.get('*', (req, res) => {
+  const indexPath = path.join(__dirname, 'dist', 'index.html');
+  
+  // 检查文件是否存在
+  if (!fs.existsSync(indexPath)) {
+    return res.status(500).send(`
+      <h1>构建错误</h1>
+      <p>dist/index.html 不存在，请确认项目已成功构建。</p>
+      <p>尝试运行: npm run build</p>
+    `);
   }
   
-  next();
-});
-
-// 为dist目录提供静态文件服务
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// 为public目录提供静态文件服务（用于调试页面）
-app.use('/public', express.static(path.join(__dirname, 'public')));
-
-// 添加调试页面路由
-app.get('/debug', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'debug-model.html'));
-});
-
-// 处理SPA路由 - 所有不存在的路径返回index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(indexPath);
 });
 
 app.listen(port, () => {
   console.log(`服务器运行在 http://localhost:${port}`);
   console.log(`模型目录: ${MODELS_DIR}`);
-  console.log(`调试页面: http://localhost:${port}/debug`);
+  console.log(`自动加载示例: http://localhost:${port}/?model=point_cloud&type=ply`);
 });

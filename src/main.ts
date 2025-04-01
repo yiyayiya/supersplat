@@ -99,7 +99,7 @@ const initShortcuts = (events: Events) => {
     return shortcuts;
 };
 
-const main = async () => {
+export async function main() {
     // root events object
     const events = new Events();
 
@@ -280,6 +280,57 @@ const main = async () => {
     // load async models
     scene.start();
 
+    // 创建app对象，作为应用实例
+    const app = {
+        loadModel: async (path: string, type: string): Promise<boolean> => {
+            console.log(`[main.ts] loadModel调用: path=${path}, type=${type}`);
+            try {
+                // 对于URL路径，尝试获取文件内容，以便与拖拽上传模式一致
+                if (path.startsWith('http') || path.startsWith('/')) {
+                    try {
+                        console.log(`[main.ts] 获取文件内容: ${path}`);
+                        const response = await fetch(path);
+                        if (!response.ok) {
+                            throw new Error(`无法加载模型文件: ${response.status} ${response.statusText}`);
+                        }
+                        
+                        const blob = await response.blob();
+                        const fileName = path.split('/').pop() || `model.${type}`;
+                        const file = new File([blob], fileName, { type: 'application/octet-stream' });
+                        
+                        console.log(`[main.ts] 以文件方式导入: ${fileName}`);
+                        const success = await events.invoke('file.dropped', file);
+                        return !!success;
+                    } catch (err) {
+                        console.error(`[main.ts] 文件方法失败，尝试直接导入`, err);
+                    }
+                }
+                
+                // 如果上面的方法失败，回退到直接导入
+                return await events.invoke('import', path, type);
+            } catch (error) {
+                console.error(`[main.ts] 模型加载失败:`, error);
+                return false;
+            }
+        },
+        resetCamera: (): boolean => {
+            events.fire('camera.reset');
+            return true;
+        },
+        getModelStats: () => {
+            // 使用类型断言，因为Scene类型可能不包含pointCloud
+            if (scene && (scene as any).pointCloud) {
+                return {
+                    vertices: (scene as any).pointCloud.count,
+                    faces: null as null
+                };
+            }
+            return null;
+        },
+        scene: scene,
+        events: events
+    };
+
     // handle load params
     const loadList = url.searchParams.getAll('load');
     for (const value of loadList) {
@@ -297,6 +348,7 @@ const main = async () => {
             }
         });
     }
-};
 
-export { main };
+    // 确保返回应用实例
+    return app;
+}

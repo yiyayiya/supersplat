@@ -13,6 +13,7 @@
     ],
     "license": "MIT",
     "main": "index.js",
+    "type": "module",
     "scripts": {
         "build": "rollup -c",
         "watch": "rollup -c -w",
