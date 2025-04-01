@@ -14,6 +14,12 @@ To learn more about using SuperSplat, please refer to the [User Guide](https://g
 
 To initialize a local development environment for SuperSplat, ensure you have [Node.js](https://nodejs.org/) 18 or later installed. Follow these steps:
 
+如果 node 版本低于 18，则先执行 node 安装脚本
+
+ ```sh
+   bash scripts/node-setup.sh --install
+```
+
 1. Clone the repository:
 
    ```sh
@@ -25,6 +31,7 @@ To initialize a local development environment for SuperSplat, ensure you have [N
 
    ```sh
    npm install
+   npm install chokidar --save-dev
    ```
 
 3. Build SuperSplat and start a local web server:

@@ -16,12 +16,16 @@
     "scripts": {
         "build": "rollup -c",
         "watch": "rollup -c -w",
-        "serve": "serve dist -C -p 80",
+        "serve": "node server.js",
         "develop": "concurrently --kill-others \"npm run watch\" \"npm run serve\"",
         "develop:local": "cross-env ENGINE_PATH=../engine npm run develop",
         "build:local": "cross-env ENGINE_PATH=../engine npm run build",
         "watch:local": "cross-env ENGINE_PATH=../engine npm run watch",
-        "lint": "eslint src"
+        "lint": "eslint src",
+        "setup-server": "npm install express chokidar"
+    },
+    "dependencies": {
+        "express": "^4.18.3"
     },
     "devDependencies": {
         "@playcanvas/eslint-config": "^2.0.9",
@@ -37,6 +41,7 @@
         "@typescript-eslint/eslint-plugin": "^8.26.1",
         "@typescript-eslint/parser": "^8.26.1",
         "autoprefixer": "^10.4.21",
+        "chokidar": "^4.0.3",
         "concurrently": "^9.1.2",
         "cors": "^2.8.5",
         "cross-env": "^7.0.3",

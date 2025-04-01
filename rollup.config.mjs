@@ -82,7 +82,8 @@ const application = {
                 { src: 'static/images', dest: 'static' },
                 { src: 'static/icons', dest: 'static' },
                 { src: 'static/lib', dest: 'static' },
-                { src: 'static/env/VertebraeHDRI_v1_512.png', dest: 'static/env' }
+                { src: 'static/env/VertebraeHDRI_v1_512.png', dest: 'static/env' },
+                { src: 'public/models/**/*', dest: 'models' }
             ]
         }),
         typescript({
